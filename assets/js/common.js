@@ -210,7 +210,7 @@
   }
 
   function disableAll(root) {
-    Array.prototype.forEach.call(root.querySelectorAll('input, button'), function (e) { e.disabled = true; });
+    Array.prototype.forEach.call(root.querySelectorAll('input, button, select'), function (e) { e.disabled = true; });
   }
 
   function gcd(a, b) { return b ? gcd(b, a % b) : Math.abs(a); }
@@ -248,6 +248,14 @@
    */
   function StepQuestion(o) { this.o = o; }
 
+  /** The "Which tool?" table from the Unit 3 Toolkit. Steps with st.tools get a picker. */
+  var TOOLS = ['Ratio', 'Unit rate', 'Proportion', 'Percent of a number', 'Percent change',
+    'Discount, tax or tip', 'Simple interest', 'Add or subtract'];
+  function toolSelect(id) {
+    return '<select id="tool-' + id + '" class="tool-select" aria-label="Tool for this step">' +
+      '<option value="">Tool…</option>' + TOOLS.map(function (t) { return '<option>' + t + '</option>'; }).join('') + '</select>';
+  }
+
   StepQuestion.prototype.render = function (c) {
     var o = this.o, n = 0;
     var rows = o.steps.map(function (st) {
@@ -260,7 +268,8 @@
           '<input id="' + id + '"' + (st.money ? ' data-money' : '') + ' type="text" inputmode="decimal" autocomplete="off">' +
           (st.pct ? '<span class="affix">%</span>' : '') + (st.unit ? '<span class="affix">' + st.unit + '</span>' : '') + '</div>';
       }
-      return '<div class="' + (o.layout === 'receipt' ? 'receipt-line' : 'answer-line') + '"><label' + (st.given != null ? '' : ' for="' + id + '"') + '>' +
+      if (st.tools) val = '<div class="tool-row">' + toolSelect(id) + val + '</div>';
+      return '<div class="' + (o.layout === 'receipt' ? 'receipt-line' : 'answer-line') + (st.tools ? ' has-tool' : '') + '"><label' + (st.given != null ? '' : ' for="' + id + '"') + '>' +
         st.label + '</label>' + val + (st.given != null ? '' : '<span class="mark" id="mark-' + id + '"></span>') + '</div>';
     });
     var html = '<p class="prompt">' + o.prompt + '</p>' + (o.before || '');
@@ -293,9 +302,24 @@
   StepQuestion.prototype.check = function () {
     var o = this.o, self = this;
     var steps = o.steps.filter(function (st) { return st.given == null; });
+    var selects = this.root.querySelectorAll('select.tool-select');
+    for (var k = 0; k < selects.length; k++) {
+      if (!selects[k].value) return { incomplete: 'Pick a tool for every step. The “Which tool?” table in your Toolkit can help.' };
+    }
     var read = readInputs(this.inputs, steps[0].money ? '6.00' : '12');
     if (read.incomplete) return read;
-    var notes = [], allOk = true;
+    var notes = [], allOk = true, toolNotes = [], toolFix = [];
+    steps.forEach(function (st, i) {
+      if (!st.tools) return;
+      var sel = self.root.querySelector('#tool-st-' + o.steps.indexOf(st));
+      var tOk = st.tools.indexOf(sel.value) !== -1;
+      sel.classList.toggle('right', tOk);
+      sel.classList.toggle('wrong', !tOk);
+      if (!tOk) {
+        toolNotes.push('Step ' + (i + 1) + ': check the tool. ' + (st.clue || ''));
+        toolFix.push('Step ' + (i + 1) + ' uses <strong>' + st.tools[0] + '</strong>' + (st.clue ? ' (' + st.clue.replace(/\.$/, '') + ')' : '') + '.');
+      }
+    });
     steps.forEach(function (st, i) {
       var v = read.values[i];
       var ok = same(v, st.answer) || (st.accept || []).some(function (a) { return same(v, a); });
@@ -305,8 +329,12 @@
       var hit = (st.mistakes || []).filter(function (m) { return m.near ? near(v, m.value, m.near) : same(v, m.value); })[0];
       notes.push(hit ? hit.msg : (st.wrong || 'Check the line “' + st.label.replace(/<[^>]+>/g, '') + '”.'));
     });
-    if (allOk) return { ok: true, message: o.success || '' };
-    return { ok: false, message: notes.join(' ') };
+    if (allOk && !toolNotes.length) return { ok: true, message: o.success || '' };
+    if (allOk) {
+      // Right numbers, wrong tool name: it counts, with a warning (like Missing Ingredient's Step 1).
+      return { ok: true, message: (o.success || '') + '</p><p class="warn"><strong>⚠ Your numbers are right, but check your tools.</strong> ' + toolFix.join(' ') };
+    }
+    return { ok: false, message: notes.concat(toolNotes).join(' ') };
   };
 
   StepQuestion.prototype.hint = function () { return this.o.hint; };
@@ -450,6 +478,6 @@
     loadProgress: loadProgress, saveResult: saveResult, resetProgress: resetProgress,
     el: el, starsText: starsText, runRound: runRound, NAMES: NAMES,
     numberLine: numberLine, frac: frac, readInputs: readInputs, markInput: markInput,
-    pickGroup: pickGroup, disableAll: disableAll, gcd: gcd, clean: clean, StepQuestion: StepQuestion
+    pickGroup: pickGroup, disableAll: disableAll, gcd: gcd, clean: clean, StepQuestion: StepQuestion, TOOLS: TOOLS
   };
 })();

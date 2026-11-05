@@ -434,6 +434,55 @@ a.tile .tile-status { color: var(--berry); }
   .receipt { padding: 0.8rem; }
 }
 
+/* Tool picker (Festival Weekend boss) */
+.answer-line.has-tool {
+  flex-direction: column; align-items: stretch;
+  padding: 0.7rem 0.9rem; background: #fff; border: 2px solid var(--line); border-radius: var(--radius);
+}
+.answer-line.has-tool > label { min-width: 0; }
+.tool-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.8rem; }
+.tool-select {
+  min-height: 52px; padding: 0.4rem 0.6rem; max-width: 100%;
+  font: inherit; font-size: 1rem; color: var(--ink);
+  background: var(--mango-light); border: 2px solid #8f8597; border-radius: 10px; cursor: pointer;
+}
+.tool-select.right { border-color: var(--leaf); background: var(--good-bg); }
+.tool-select.wrong { border-color: var(--bad); }
+.tool-select:disabled { color: var(--ink); opacity: 1; cursor: default; }
+.tool-tag {
+  display: inline-block; margin-left: 0.3rem; padding: 0 0.5rem;
+  font-size: 0.8rem; font-weight: 700; border-radius: 999px;
+  background: var(--mango-light); border: 1px solid #b8741a;
+}
+
+/* Teacher page */
+.teacher section { margin-bottom: 1.6rem; }
+.teacher h2 { color: var(--berry); margin: 0 0 0.5rem; font-size: 1.3rem; }
+.teacher li { margin: 0.35rem 0; }
+.share-card {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem;
+  padding: 1rem 1.2rem; background: #fff; border: 3px solid var(--berry); border-radius: var(--radius);
+}
+.share-text { flex: 1 1 18rem; }
+.site-url { font-size: 1.25rem; font-weight: 800; word-break: break-all; margin: 0.2rem 0; }
+.qr { width: 240px; height: 240px; max-width: 100%; image-rendering: pixelated; }
+.table-wrap { overflow-x: auto; }
+.teacher-table { border-collapse: collapse; width: 100%; background: #fff; font-size: 0.95rem; }
+.teacher-table th, .teacher-table td { border: 2px solid var(--line); padding: 0.5rem 0.6rem; text-align: left; vertical-align: top; }
+.teacher-table thead th { background: var(--mango-light); }
+.teacher-table td:first-child { text-align: center; font-weight: 700; }
+@media (max-width: 480px) {
+  .teacher-table { font-size: 0.85rem; }
+  .teacher-table th, .teacher-table td { padding: 0.35rem; }
+  .qr { width: 200px; height: 200px; }
+}
+@media print {
+  .topbar, .no-print, .home-footer { display: none !important; }
+  body { background: #fff; }
+  .share-card { border-color: #000; }
+  a { color: #000; text-decoration: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }

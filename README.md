@@ -18,6 +18,9 @@ Practice games for Grade 8 math (Ontario: B1.4, B2.1, B2.8), all set at Zuri's S
 | `price-board/` | Lesson 5 game: new price with a multiplier, percent change (÷ ORIGINAL), the original before an increase, two changes in a row. |
 | `checkout/` | Lesson 6 game: a receipt that builds line by line: discount, HST (× 1.13), tip on the food before tax, rounding at the end. |
 | `truck-fund/` | Lesson 7 game: I = Prt, months to years, total vs interest, find the time or rate, and choose a plan to reach a goal. |
+| `festival-boss/` | Lesson 8 boss: 5 multi-step problems; students pick the tool for each step, then solve it. |
+| `teacher/` | Teacher page: how to use the site, games by lesson and expectation, privacy notes, QR code. |
+| `assets/img/site-qr.svg`, `site-qr.png` | QR code for the site (made offline, no QR service). |
 | `assets/js/common.js` | Shared code: name list, answer checking, saved stars, and the round engine (hint after one wrong try, worked solution after two). |
 | `assets/js/<game>.js` | Each game's question generator, hint and worked solution. |
 | `assets/css/style.css` | All styles. |
