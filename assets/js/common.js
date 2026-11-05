@@ -123,6 +123,89 @@
     return s;
   }
 
+  // ---------- Pictures used in hints ----------
+  /**
+   * A double number line drawn as SVG.
+   * o.points:   [{ p: 0..1, top: '$0', bottom: '0' }]  (a label of '?' is highlighted)
+   * o.ops:      [{ p: 0..1, text: '÷ 6' }]              (written between the two lines)
+   * o.segments: [{ from: 0..1, to: 0..1, text: '25%', cls: 't25' }] (blocks between the lines)
+   * o.label:    text for screen readers; o.caption: text under the picture
+   */
+  function numberLine(o) {
+    var L = 36, R = 290;
+    function X(p) { return +(L + p * (R - L)).toFixed(1); }
+    function text(x, y, s, cls) {
+      return '<text class="' + cls + '" x="' + x + '" y="' + y + '" text-anchor="middle">' + s + '</text>';
+    }
+    function cls(s) { return s === '?' ? 'dnl-ask' : 'dnl-text'; }
+    var s = '<line class="dnl-line" x1="18" y1="40" x2="322" y2="40"/>' +
+      '<line class="dnl-line" x1="18" y1="88" x2="322" y2="88"/>';
+    (o.segments || []).forEach(function (g, i) {
+      var x1 = X(g.from), x2 = X(g.to);
+      s += '<rect class="dnl-seg ' + (g.cls || (i % 2 ? 'alt' : '')) + '" x="' + x1 + '" y="47" width="' + (x2 - x1) + '" height="34" rx="3"/>';
+      if (g.text && x2 - x1 >= 30) s += text((x1 + x2) / 2, 69, g.text, 'dnl-segtext');
+    });
+    (o.points || []).forEach(function (pt) {
+      var x = X(pt.p);
+      s += '<line class="dnl-tick" x1="' + x + '" y1="33" x2="' + x + '" y2="47"/>' +
+        '<line class="dnl-tick" x1="' + x + '" y1="81" x2="' + x + '" y2="95"/>';
+      if (pt.top != null) s += text(x, 24, pt.top, cls(pt.top));
+      if (pt.bottom != null) s += text(x, 114, pt.bottom, cls(pt.bottom));
+    });
+    (o.ops || []).forEach(function (op) { s += text(X(op.p), 69, op.text, 'dnl-op'); });
+    return '<figure class="dnl"><svg viewBox="0 0 340 124" role="img" aria-label="' + (o.label || 'Double number line') + '">' +
+      s + '</svg>' + (o.caption ? '<figcaption>' + o.caption + '</figcaption>' : '') + '</figure>';
+  }
+
+  /** A stacked fraction, e.g. frac('2 cups', '5 smoothies'). */
+  function frac(top, bottom) {
+    return '<span class="frac"><span class="frac-top">' + top + '</span><span class="frac-bottom">' + bottom + '</span></span>';
+  }
+
+  /** Reads every input in a list. Returns { values } or { incomplete: message }. */
+  function readInputs(inputs, example) {
+    var values = [];
+    for (var i = 0; i < inputs.length; i++) {
+      var raw = inputs[i].value;
+      if (!raw.trim()) return { incomplete: 'Fill in every box before you check.' };
+      var v = parseAnswer(raw);
+      if (v === null) return { incomplete: 'Type each answer as a number, like ' + (example || '12') + '.' };
+      values.push(v);
+    }
+    return { values: values };
+  }
+
+  /** Shows ✓ or ✗ on an input and its mark span (if it has one). */
+  function markInput(input, ok) {
+    input.classList.toggle('right', ok);
+    input.classList.toggle('wrong', !ok);
+    var mark = input.id && document.getElementById('mark-' + input.id);
+    if (mark) {
+      mark.textContent = ok ? '✓ Right' : '✗ Check this one';
+      mark.className = 'mark ' + (ok ? 'right' : 'wrong');
+    }
+  }
+
+  /** Makes a group of buttons act like radio buttons. Calls onPick(index). */
+  function pickGroup(buttons, onPick) {
+    Array.prototype.forEach.call(buttons, function (btn, i) {
+      btn.setAttribute('aria-pressed', 'false');
+      btn.addEventListener('click', function () {
+        Array.prototype.forEach.call(buttons, function (b) { b.setAttribute('aria-pressed', String(b === btn)); });
+        onPick(i);
+      });
+    });
+  }
+
+  function disableAll(root) {
+    Array.prototype.forEach.call(root.querySelectorAll('input, button'), function (e) { e.disabled = true; });
+  }
+
+  function gcd(a, b) { return b ? gcd(b, a % b) : Math.abs(a); }
+
+  /** Rounds away floating-point noise (0.1 + 0.2 → 0.3) without rounding real digits. */
+  function clean(n) { return parseFloat(n.toFixed(9)); }
+
   // ---------- Round engine ----------
   var PRAISE = ['Nice work!', 'Yes!', 'Correct!', 'You got it!', 'Great thinking!', 'Spot on!'];
 
@@ -171,6 +254,7 @@
     function showQuestion() {
       tries = 0; finished = false;
       q = cfg.makeQuestion(index, nextName);
+      U3.current = q; // lets automated tests read the question; the game does not use it
       els.question.innerHTML = '';
       q.render(els.question);
       setFeedback('', '');
@@ -256,6 +340,8 @@
     randInt: randInt, pick: pick, shuffle: shuffle, namePicker: namePicker,
     parseAnswer: parseAnswer, same: same, near: near, money: money, num: num,
     loadProgress: loadProgress, saveResult: saveResult, resetProgress: resetProgress,
-    el: el, starsText: starsText, runRound: runRound, NAMES: NAMES
+    el: el, starsText: starsText, runRound: runRound, NAMES: NAMES,
+    numberLine: numberLine, frac: frac, readInputs: readInputs, markInput: markInput,
+    pickGroup: pickGroup, disableAll: disableAll, gcd: gcd, clean: clean
   };
 })();

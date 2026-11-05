@@ -288,6 +288,105 @@ a.tile .tile-status { color: var(--berry); }
 .big-stars { font-size: 3.5rem; color: var(--mango); margin: 0.2rem 0; letter-spacing: 0.1em; }
 .summary .actions { justify-content: center; margin-top: 1.2rem; }
 
+/* ---------- Shared question parts ---------- */
+.step-title { font-weight: 700; margin: 1.1rem 0 0.4rem; }
+.answer-list { display: flex; flex-direction: column; gap: 0.6rem; margin: 0.6rem 0; }
+.answer-line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.8rem; }
+.answer-line > label { font-weight: 700; min-width: 9rem; }
+.answer-line .mark { flex-basis: 100%; }
+.dnl-seg { fill: #f8d3e6; stroke: var(--berry); stroke-width: 1.5; }
+.dnl-seg.alt { fill: var(--mango-light); stroke: #b8741a; }
+.dnl-seg.t50 { fill: #f8d3e6; stroke: var(--ink); }
+.dnl-seg.t25 { fill: var(--mango-light); stroke: var(--ink); }
+.dnl-seg.t10 { fill: var(--mint); stroke: var(--ink); }
+.dnl-seg.t5 { fill: #e3e7ff; stroke: var(--ink); }
+.dnl-seg.t1 { fill: #f1eef3; stroke: var(--ink); }
+.dnl-segtext { font: 700 13px system-ui, sans-serif; fill: var(--ink); }
+
+/* Recipe card and ratio tables (Recipe Mixer) */
+.recipe-card {
+  display: flex; flex-direction: column; gap: 0.15rem;
+  margin: 0.8rem 0; padding: 0.7rem 1rem;
+  background: #fff; border: 2px dashed var(--berry); border-radius: var(--radius);
+}
+.recipe-name { font-weight: 800; color: var(--berry); }
+.recipe-ratio { font-size: 1.1rem; font-weight: 600; }
+.ratio-table { border-collapse: collapse; margin: 0.6rem 0; background: #fff; width: 100%; max-width: 560px; }
+.ratio-table th, .ratio-table td { border: 2px solid var(--line); padding: 0.5rem 0.7rem; text-align: center; vertical-align: middle; }
+.ratio-table thead th { background: var(--mango-light); }
+.ratio-table tbody th { text-align: left; font-weight: 700; }
+.ratio-table td { font-size: 1.15rem; font-weight: 700; }
+.ratio-table input {
+  width: 5.5em; min-height: 52px; padding: 0.4rem 0.6rem; font: inherit; font-size: 1.15rem; text-align: center;
+  border: 2px solid #8f8597; border-radius: 10px; background: #fff;
+}
+.ratio-table input.right { border-color: var(--leaf); background: var(--good-bg); }
+.ratio-table input.wrong { border-color: var(--bad); }
+.ratio-table input:disabled { color: var(--ink); }
+.ratio-table .mark { display: block; }
+.ratio-table.mini { max-width: 380px; }
+.ratio-table.mini td, .ratio-table.mini th { padding: 0.3rem 0.6rem; font-size: 1rem; }
+.ratio-table .op { color: var(--show-line); font-weight: 700; }
+
+/* Bar model (split a total) */
+.bar-model { margin: 0.6rem 0; }
+.bar-row { display: flex; align-items: center; gap: 0.6rem; margin: 0.3rem 0; flex-wrap: wrap; }
+.bar-label { min-width: 7rem; font-weight: 700; }
+.bar-boxes { display: flex; flex-wrap: wrap; gap: 4px; }
+.bar-box {
+  min-width: 2.6rem; height: 2.4rem; padding: 0 0.3rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 2px solid var(--ink); border-radius: 6px; font-weight: 800;
+}
+.bar-box.c0 { background: #f8d3e6; }
+.bar-box.c1 { background: var(--mango-light); }
+.bar-box.c2 { background: var(--mint); }
+.bar-total { font-weight: 700; margin: 0.3rem 0 0; }
+
+/* Proportion options (Missing Ingredient) */
+.options { display: flex; flex-wrap: wrap; gap: 0.7rem; }
+.option {
+  font: inherit; color: var(--ink); background: #fff; cursor: pointer;
+  min-height: 52px; padding: 0.6rem 1rem;
+  border: 3px solid var(--line); border-radius: var(--radius);
+}
+.option:hover:not(:disabled) { border-color: var(--berry); }
+.option[aria-pressed="true"] { border-color: var(--berry); background: #fdf0f7; box-shadow: inset 0 0 0 2px var(--berry); }
+.option:disabled { cursor: default; }
+.option.answer { border-color: var(--leaf); background: var(--good-bg); }
+.eq { display: inline-flex; align-items: center; gap: 0.5rem; }
+.eq-sign { font-size: 1.3rem; font-weight: 700; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; line-height: 1.25; }
+.frac-top { padding: 0 0.3rem 0.1rem; border-bottom: 2px solid currentColor; }
+.frac-bottom { padding: 0.1rem 0.3rem 0; }
+.feedback .frac { font-size: 0.95rem; }
+
+/* Percent tiles (Percent Builder) */
+.tile-bank { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.pct-tile {
+  min-width: 4.4rem; min-height: 56px; padding: 0.4rem 0.8rem;
+  font: inherit; font-size: 1.2rem; font-weight: 800; cursor: pointer;
+  color: var(--ink); background: #fff; border: 3px solid var(--ink); border-radius: 12px;
+}
+.pct-tile.t50 { background: #f8d3e6; }
+.pct-tile.t25 { background: var(--mango-light); }
+.pct-tile.t10 { background: var(--mint); }
+.pct-tile.t5 { background: #e3e7ff; }
+.pct-tile.t1 { background: #f1eef3; }
+.pct-tile:hover:not(:disabled) { border-color: var(--berry); }
+.pct-tile:disabled, .small-btn:disabled { cursor: default; opacity: 0.6; }
+.tile-tools { display: flex; gap: 0.6rem; margin-top: 0.6rem; }
+.btn.small-btn { min-height: 48px; padding: 0.4rem 1rem; font-size: 0.95rem; }
+.build-line { font-size: 1.1rem; margin: 0.8rem 0 0.2rem; }
+
+@media (max-width: 480px) {
+  .answer-line > label { min-width: 0; flex-basis: 100%; }
+  .ratio-table th, .ratio-table td { padding: 0.4rem; }
+  .ratio-table input { width: 4.5em; }
+  .options { flex-direction: column; }
+  .pct-tile { min-width: 3.8rem; font-size: 1.1rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }

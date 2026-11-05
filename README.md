@@ -11,9 +11,12 @@ Practice games for Grade 8 math (Ontario: B1.4, B2.1, B2.8), all set at Zuri's S
 | Path | What it is |
 |---|---|
 | `index.html` | Home screen: the truck map, one tile per game. A tile gets a star once that game is completed. |
+| `recipe-mixer/` | Lesson 1 game: scale a recipe in a ratio table, or split a total in a ratio (bar model). |
 | `best-buy/` | Lesson 2 game: compare two price tags by unit price. |
+| `missing-ingredient/` | Lesson 3 game: pick the proportion with the same order on both sides, then solve it. |
+| `percent-builder/` | Lesson 4 game: build a percent from 50%, 25%, 10%, 5% and 1% tiles on a double number line. |
 | `assets/js/common.js` | Shared code: name list, answer checking, saved stars, and the round engine (hint after one wrong try, worked solution after two). |
-| `assets/js/best-buy.js` | Best Buy question generator, hint (double number line) and worked solution. |
+| `assets/js/<game>.js` | Each game's question generator, hint and worked solution. |
 | `assets/css/style.css` | All styles. |
 | `netlify.toml` | Netlify settings: no build, publish the repo root, privacy headers. |
 
