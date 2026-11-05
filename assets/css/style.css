@@ -388,6 +388,52 @@ a.tile .tile-status { color: var(--berry); }
   .pct-tile { min-width: 3.8rem; font-size: 1.1rem; }
 }
 
+/* Given values in step questions */
+.given { font-weight: 800; font-size: 1.1rem; }
+
+/* Lowest terms (Recipe Mixer) */
+.ratio-inputs input { width: 4.5em; text-align: center; }
+.big-colon { font-size: 1.8rem; line-height: 1; padding: 0 0.2rem; }
+
+/* Price board (Price Board) */
+.menu-board {
+  margin: 0.8rem 0; padding: 0.8rem 1rem; max-width: 520px;
+  background: #24323a; color: #fff; border-radius: var(--radius); border: 6px solid #6b4a2b;
+}
+.mb-row { display: flex; justify-content: space-between; gap: 1rem; padding: 0.25rem 0; border-bottom: 1px dashed rgba(255, 255, 255, 0.35); }
+.mb-row:last-child { border-bottom: none; }
+.mb-price { font-weight: 800; color: #ffd98a; white-space: nowrap; }
+
+/* Receipt (Checkout) */
+.receipt {
+  margin: 0.8rem 0; padding: 1rem 1.2rem; max-width: 560px;
+  background: #fff; border: 2px solid var(--line); border-radius: 6px;
+  box-shadow: 0 2px 0 var(--line);
+  font-variant-numeric: tabular-nums;
+}
+.receipt-head { margin: 0 0 0.6rem; text-align: center; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--berry); }
+.receipt-foot { margin: 0.8rem 0 0; text-align: center; font-size: 0.85rem; color: var(--muted); }
+.receipt-line {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.3rem 0.8rem;
+  padding: 0.55rem 0; border-bottom: 2px dashed var(--line);
+}
+.receipt-line[hidden] { display: none; }
+.receipt-line:last-of-type { border-bottom: none; }
+.receipt-line > label { font-weight: 700; flex: 1 1 14rem; }
+.receipt-line .mark { flex-basis: 100%; text-align: right; }
+
+/* Goal (Second Truck Fund) */
+.goal-card {
+  display: inline-block; margin: 0.4rem 0; padding: 0.5rem 1rem;
+  background: var(--mint); border: 2px solid var(--leaf); border-radius: 999px; font-weight: 800; color: var(--leaf);
+}
+.plan-options .option { min-width: 7rem; font-weight: 700; }
+@media (max-width: 480px) {
+  .plan-options { flex-direction: row; }
+  .plan-options .option { min-width: 0; flex: 1 1 40%; }
+  .receipt { padding: 0.8rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }

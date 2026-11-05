@@ -42,7 +42,7 @@
   // ---------- Numbers and answers ----------
   /**
    * Turns what a student typed into a number, or null if it isn't one.
-   * Accepts: 1.2  1.20  $1.20  1.20$  .5  1,20 (decimal comma)  1,200  7¢  7 cents
+   * Accepts: 1.2  1.20  $1.20  1.20$  .5  1,20 (decimal comma)  1,200  7¢  7 cents  25%
    */
   function parseAnswer(raw) {
     if (raw == null) return null;
@@ -54,6 +54,7 @@
       s = s.replace(/(¢|cents?)$/, '');
     }
     s = s.replace(/^\$/, '').replace(/\$$/, '');
+    s = s.replace(/%$/, '');                          // 25% → 25 (percent boxes)
     s = s.replace(/^(-?\d+),(\d{1,2})$/, '$1.$2');   // 1,20 → 1.20
     s = s.replace(/,(?=\d{3}(?:\D|$))/g, '');        // 1,200 → 1200
     if (!/^-?(\d+\.?\d*|\.\d+)$/.test(s)) return null;
@@ -76,9 +77,20 @@
   /** Money for display. Round to the cent only when showing a final answer. */
   function money(n) {
     var neg = n < 0;
-    var s = Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    var s = Math.abs(n).toFixed(2);
+    if (s.length >= 8) s = s.replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0'); // $40 000.00, as in the unit
     return (neg ? '−$' : '$') + s;
   }
+
+  /** Whole-dollar amounts the way the unit writes them: $60, $8000, $40 000. Other amounts get cents. */
+  function dollars(n) {
+    if (Math.abs(n - Math.round(n)) > 1e-9) return money(n);
+    var s = String(Math.round(Math.abs(n)));
+    if (s.length >= 5) s = s.replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0');
+    return (n < 0 ? '−$' : '$') + s;
+  }
+  /** 'a cooler', 'an apron set' */
+  function an(word) { return (/^[aeiou]/i.test(word) ? 'an ' : 'a ') + word; }
 
   /** A plain number for display with no trailing zeros: 0.75, 1.5, 6. */
   function num(n) {
@@ -206,6 +218,101 @@
   /** Rounds away floating-point noise (0.1 + 0.2 → 0.3) without rounding real digits. */
   function clean(n) { return parseFloat(n.toFixed(9)); }
 
+  /**
+   * Money answers are still accepted as 1.2, but the unit asks for two decimal places
+   * ($0.30, not $0.3), so a gentle reminder shows up. Money inputs carry data-money.
+   */
+  function moneyNote(root) {
+    var inputs = root.querySelectorAll('input[data-money]');
+    for (var i = 0; i < inputs.length; i++) {
+      var raw = inputs[i].value.trim();
+      if (/[.,]\d$/.test(raw.replace(/\$/g, ''))) {
+        return '<p class="small">💡 Money has two decimal places: write $' + raw.replace(/\$/g, '') + '0, not $' + raw.replace(/\$/g, '') + '.</p>';
+      }
+    }
+    return '';
+  }
+
+  // ---------- A question made of labelled steps ----------
+  /**
+   * o = {
+   *   prompt, before: HTML above the steps (a menu board, a picture),
+   *   layout: 'list' | 'receipt' (receipt lines appear one at a time as each is filled in),
+   *   title: receipt heading,
+   *   steps: [{ label, answer, money, pct, unit, given (show a value, no input),
+   *             accept: [other values that also count],
+   *             mistakes: [{ value, msg, near }],  // spotted wrong answers → targeted feedback
+   *             wrong: 'message if wrong and no mistake matched' }],
+   *   success: 'message', hint: HTML, solution: HTML
+   * }
+   */
+  function StepQuestion(o) { this.o = o; }
+
+  StepQuestion.prototype.render = function (c) {
+    var o = this.o, n = 0;
+    var rows = o.steps.map(function (st) {
+      var id = 'st-' + (n++);
+      var val;
+      if (st.given != null) {
+        val = '<span class="given">' + (st.money ? money(st.given) : st.pct ? num(st.given) + '%' : num(st.given) + (st.unit ? ' ' + st.unit : '')) + '</span>';
+      } else {
+        val = '<div class="input-row">' + (st.money ? '<span class="affix">$</span>' : '') + (st.prefix ? '<span class="affix">' + st.prefix + '</span>' : '') +
+          '<input id="' + id + '"' + (st.money ? ' data-money' : '') + ' type="text" inputmode="decimal" autocomplete="off">' +
+          (st.pct ? '<span class="affix">%</span>' : '') + (st.unit ? '<span class="affix">' + st.unit + '</span>' : '') + '</div>';
+      }
+      return '<div class="' + (o.layout === 'receipt' ? 'receipt-line' : 'answer-line') + '"><label' + (st.given != null ? '' : ' for="' + id + '"') + '>' +
+        st.label + '</label>' + val + (st.given != null ? '' : '<span class="mark" id="mark-' + id + '"></span>') + '</div>';
+    });
+    var html = '<p class="prompt">' + o.prompt + '</p>' + (o.before || '');
+    if (o.layout === 'receipt') {
+      html += '<div class="receipt"><p class="receipt-head">' + (o.title || 'Zuri’s Smoothie Truck') + '</p>' + rows.join('') +
+        '<p class="receipt-foot">Thank you! Come again.</p></div>';
+    } else {
+      html += '<div class="answer-list">' + rows.join('') + '</div>';
+    }
+    c.innerHTML = html;
+    this.root = c;
+    this.inputs = c.querySelectorAll('input');
+    if (o.layout === 'receipt') {
+      // Build the receipt one line at a time.
+      var lines = c.querySelectorAll('.receipt-line');
+      var reveal = function () {
+        var open = true;
+        Array.prototype.forEach.call(lines, function (line) {
+          line.hidden = !open;
+          var inp = line.querySelector('input');
+          if (inp && !inp.value.trim()) open = false;
+        });
+      };
+      Array.prototype.forEach.call(this.inputs, function (inp) { inp.addEventListener('input', reveal); });
+      reveal();
+      this.revealAll = function () { Array.prototype.forEach.call(lines, function (l) { l.hidden = false; }); };
+    }
+  };
+
+  StepQuestion.prototype.check = function () {
+    var o = this.o, self = this;
+    var steps = o.steps.filter(function (st) { return st.given == null; });
+    var read = readInputs(this.inputs, steps[0].money ? '6.00' : '12');
+    if (read.incomplete) return read;
+    var notes = [], allOk = true;
+    steps.forEach(function (st, i) {
+      var v = read.values[i];
+      var ok = same(v, st.answer) || (st.accept || []).some(function (a) { return same(v, a); });
+      markInput(self.inputs[i], ok);
+      if (ok) return;
+      allOk = false;
+      var hit = (st.mistakes || []).filter(function (m) { return m.near ? near(v, m.value, m.near) : same(v, m.value); })[0];
+      notes.push(hit ? hit.msg : (st.wrong || 'Check the line “' + st.label.replace(/<[^>]+>/g, '') + '”.'));
+    });
+    if (allOk) return { ok: true, message: o.success || '' };
+    return { ok: false, message: notes.join(' ') };
+  };
+
+  StepQuestion.prototype.hint = function () { return this.o.hint; };
+  StepQuestion.prototype.solution = function () { if (this.revealAll) this.revealAll(); return this.o.solution; };
+  StepQuestion.prototype.lock = function () { if (this.revealAll) this.revealAll(); disableAll(this.root); };
+
   // ---------- Round engine ----------
   var PRAISE = ['Nice work!', 'Yes!', 'Correct!', 'You got it!', 'Great thinking!', 'Spot on!'];
 
@@ -275,14 +382,15 @@
         return;
       }
       tries++;
+      var note = moneyNote(els.question);
       if (r.ok) {
         points += tries === 1 ? 2 : 1;
         if (tries === 1) firstTry++;
-        setFeedback('good', '<p><strong>' + pick(PRAISE) + '</strong> ' + (r.message || '') + '</p>');
+        setFeedback('good', '<p><strong>' + pick(PRAISE) + '</strong> ' + (r.message || '') + '</p>' + note);
         endQuestion();
       } else if (tries === 1) {
         setFeedback('try',
-          '<p><strong>Not quite.</strong> ' + (r.message || '') + '</p>' +
+          '<p><strong>Not quite.</strong> ' + (r.message || '') + '</p>' + note +
           '<div class="hint"><h2>Hint</h2>' + q.hint() + '</div>' +
           '<p class="small">Fix your answer and press Check again.</p>');
       } else {
@@ -338,10 +446,10 @@
 
   window.U3 = {
     randInt: randInt, pick: pick, shuffle: shuffle, namePicker: namePicker,
-    parseAnswer: parseAnswer, same: same, near: near, money: money, num: num,
+    parseAnswer: parseAnswer, same: same, near: near, money: money, num: num, dollars: dollars, an: an,
     loadProgress: loadProgress, saveResult: saveResult, resetProgress: resetProgress,
     el: el, starsText: starsText, runRound: runRound, NAMES: NAMES,
     numberLine: numberLine, frac: frac, readInputs: readInputs, markInput: markInput,
-    pickGroup: pickGroup, disableAll: disableAll, gcd: gcd, clean: clean
+    pickGroup: pickGroup, disableAll: disableAll, gcd: gcd, clean: clean, StepQuestion: StepQuestion
   };
 })();

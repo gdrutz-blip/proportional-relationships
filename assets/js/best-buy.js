@@ -15,15 +15,15 @@
   // cents = range for the unit price in cents.
   var COUNT_ITEMS = [
     { kind: 'count', what: 'mangoes', one: 'mango', many: 'mangoes', qtys: [3, 4, 5, 6, 8], cents: [90, 190] },
-    { kind: 'count', what: 'kiwis', one: 'kiwi', many: 'kiwis', qtys: [4, 5, 6, 8, 10, 12], cents: [35, 80] },
+    { kind: 'count', what: 'kiwis', one: 'kiwi', many: 'kiwis', qtys: [4, 5, 6, 8, 10], cents: [35, 80] },
     { kind: 'count', what: 'limes', one: 'lime', many: 'limes', qtys: [3, 4, 5, 6, 8, 10], cents: [30, 65] },
-    { kind: 'count', what: 'bananas', one: 'banana', many: 'bananas', qtys: [5, 6, 7, 8, 12], cents: [25, 45] },
+    { kind: 'count', what: 'bananas', one: 'banana', many: 'bananas', qtys: [4, 5, 6, 8, 10], cents: [25, 45] },
     { kind: 'count', what: 'pineapples', one: 'pineapple', many: 'pineapples', qtys: [2, 3, 4, 5], cents: [280, 450] }
   ];
   var PACK_ITEMS = [
-    { kind: 'count', what: 'paper cups', one: 'cup', many: 'cups', qtys: [50, 100, 150, 200, 250], cents: [6, 14] },
-    { kind: 'count', what: 'paper straws', one: 'straw', many: 'straws', qtys: [100, 200, 250, 500], cents: [2, 6] },
-    { kind: 'count', what: 'cup lids', one: 'lid', many: 'lids', qtys: [50, 100, 200, 250], cents: [3, 8] }
+    { kind: 'count', what: 'paper cups', one: 'cup', many: 'cups', qtys: [50, 100, 200, 500], cents: [6, 14] },
+    { kind: 'count', what: 'paper straws', one: 'straw', many: 'straws', qtys: [100, 200, 500], cents: [2, 6] },
+    { kind: 'count', what: 'cup lids', one: 'lid', many: 'lids', qtys: [50, 100, 200], cents: [3, 8] }
   ];
   var MEASURE_ITEMS = [
     { kind: 'mass', what: 'frozen strawberries', cents: [700, 1200] },
@@ -35,10 +35,10 @@
     { kind: 'volume', what: 'orange juice', cents: [200, 450] },
     { kind: 'volume', what: 'coconut water', cents: [400, 800] }
   ];
-  // Quantities in kg or L.
-  var SAME_UNIT_QTYS = [0.5, 1.5, 2, 2.5, 3];
-  var SMALL_QTYS = { mass: [0.2, 0.25, 0.4, 0.5, 0.75], volume: [0.25, 0.5, 0.75] };
-  var BIG_QTYS = { mass: [1.5, 2, 2.5, 3], volume: [1.5, 2, 3, 4] };
+  // Quantities in kg or L. Kept friendly for no-calculator work (the unit test is no-calculator).
+  var SAME_UNIT_QTYS = [0.5, 2, 3, 4, 5];
+  var SMALL_QTYS = { mass: [0.25, 0.5], volume: [0.25, 0.5] };
+  var BIG_QTYS = { mass: [2, 3, 4, 5], volume: [2, 3, 4] };
 
   var PROMPTS = [
     function (n, w) { return n + ' is buying ' + w + ' for the truck. Which is the better buy?'; },
@@ -59,6 +59,9 @@
       if (small === big) continue;
       var a = U.randInt(item.cents[0], item.cents[1]);
       var b = U.randInt(item.cents[0], item.cents[1]);
+      // Friendly unit prices: 5¢ steps for fruit, 10¢ steps per kg or L (tiny prices like straws stay 1¢ steps).
+      var step = item.kind === 'count' ? (item.cents[0] >= 20 ? 5 : 1) : 10;
+      if (a % step || b % step) continue;
       var lo = Math.min(a, b), hi = Math.max(a, b);
       if (hi - lo < Math.max(1, lo * 0.05)) continue;          // not a near-tie
       if (lo >= 20 && hi - lo > lo * 0.35) continue;           // not too obvious
@@ -178,7 +181,7 @@
         '</button>' +
         '<label class="unit-input" for="unit-' + i + '">Unit price for ' + t.label + '</label>' +
         '<div class="input-row"><span class="affix">$</span>' +
-        '<input id="unit-' + i + '" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" aria-describedby="mark-' + i + '">' +
+        '<input id="unit-' + i + '" data-money type="text" inputmode="decimal" autocomplete="off" spellcheck="false" aria-describedby="mark-' + i + '">' +
         '<span class="affix">per ' + per + '</span></div>' +
         '<span class="mark" id="mark-' + i + '"></span>' +
         '</div>';

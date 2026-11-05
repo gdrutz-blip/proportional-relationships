@@ -3,6 +3,7 @@
  * Build the percent from benchmark tiles (50%, 25%, 10%, 5%, 1%) on a double number line,
  * find what each tile is worth, then add them up.
  * Key move: 10% = ÷ 10, 5% = half of that, 25% = ÷ 4. Build the rest from them.
+ * The last question works backwards to find the whole (30% = 18 → 10% = 6 → 100% = 60).
  */
 (function () {
   'use strict';
@@ -26,7 +27,7 @@
     function (n, base, pct) { return 'On Saturday, the truck sold ' + base + ' smoothies. ' + pct + '% of them were Berry Blast. How many Berry Blasts did it sell?'; },
     function (n, base, pct) { return n + ' counted ' + base + ' customers at the festival. ' + pct + '% of them paid with a card. How many paid with a card?'; },
     function (n, base, pct) { return 'Zuri bought ' + base + ' paper cups. ' + n + ' used ' + pct + '% of them on Friday. How many cups is that?'; },
-    function (n, base, pct) { return n + ' asked ' + base + ' students to vote for a new flavour. ' + pct + '% voted for Mango Tango. How many votes is that?'; }
+    function (n, base, pct) { return n + ' asked ' + base + ' students to vote for a new flavour. ' + pct + '% voted for Mango Rush. How many votes is that?'; }
   ];
   var GROWTH_CONTEXT = function (n, base, pct) {
     return 'Last Saturday the truck sold ' + base + ' smoothies. This Saturday it sold ' + pct + '% of that. How many smoothies did it sell this Saturday?';
@@ -37,6 +38,7 @@
   ];
 
   function makeQuestion(index, nextName) {
+    if (index === QUESTIONS - 1) return new WholeQ(nextName());
     var pct = U.pick(TARGETS[Math.min(index, TARGETS.length - 1)]);
     var name = nextName();
     var bases = COUNT_BASES.filter(function (b) { return (b * pct) % 100 === 0; });
@@ -93,7 +95,7 @@
       '<p class="step-title">Step 3: Add them up.</p>' +
       '<div class="answer-line"><label for="pb-total">' + d.pct + '% of ' + this.baseText() + ' =</label><div class="input-row">' +
       (d.money ? '<span class="affix">$</span>' : '') +
-      '<input id="pb-total" type="text" inputmode="decimal" autocomplete="off">' +
+      '<input id="pb-total"' + (d.money ? ' data-money' : '') + ' type="text" inputmode="decimal" autocomplete="off">' +
       (d.unit ? '<span class="affix">' + d.unit + '</span>' : '') + '</div><span class="mark" id="mark-pb-total"></span></div>';
     c.innerHTML = html;
     this.root = c;
@@ -137,7 +139,7 @@
       html += '<div class="answer-line"><label for="pb-' + t + '">' + t + '% of ' + self.baseText() +
         (n > 1 ? ' <span class="small">(used ' + n + ' times)</span>' : '') + ' =</label><div class="input-row">' +
         (d.money ? '<span class="affix">$</span>' : '') +
-        '<input id="pb-' + t + '" data-t="' + t + '" type="text" inputmode="decimal" autocomplete="off">' +
+        '<input id="pb-' + t + '" data-t="' + t + '"' + (d.money ? ' data-money' : '') + ' type="text" inputmode="decimal" autocomplete="off">' +
         '</div><span class="mark" id="mark-pb-' + t + '"></span></div>';
     });
     if (!html) html = '<p class="small">Boxes appear here as you add tiles.</p>';
@@ -238,6 +240,102 @@
   };
 
   Question.prototype.lock = function () { U.disableAll(this.root); };
+
+  // =====================================================================
+  // Find the whole (like test question 2: "36 is 45% of what number?")
+  // =====================================================================
+  var WHOLE_PCTS = [15, 20, 30, 35, 40, 45, 60, 65, 70, 75, 80];
+
+  function WholeQ(name) {
+    var pct = U.pick(WHOLE_PCTS);
+    var bench = [25, 10, 5].filter(function (b) { return pct % b === 0; })[0];
+    var benchVal = U.randInt(2, 12);                 // what the benchmark percent is worth
+    this.pct = pct; this.bench = bench; this.benchVal = benchVal;
+    this.whole = benchVal * 100 / bench;
+    this.part = benchVal * pct / bench;
+    var ctx = U.randInt(0, 2);
+    if (ctx === 0) {
+      this.prompt = name + ' sold ' + this.part + ' Berry Blasts on Saturday. That was ' + pct + '% of all the smoothies sold. How many smoothies were sold in all?';
+      this.unit = 'smoothies';
+    } else if (ctx === 1) {
+      this.prompt = this.part + ' customers chose Mango Rush. That is ' + pct + '% of the customers. How many customers were there?';
+      this.unit = 'customers';
+    } else {
+      this.prompt = this.part + ' is ' + pct + '% of what number?';
+      this.unit = '';
+    }
+  }
+
+  WholeQ.prototype.render = function (c) {
+    var times = this.pct / this.bench;
+    c.innerHTML = '<p class="prompt">' + this.prompt + '</p>' +
+      '<p class="watch">Read carefully: is ' + this.part + ' the part or the whole?</p>' +
+      '<div class="pic-box">' + this.picture(false) + '</div>' +
+      '<p class="step-title">Step 1: ' + this.pct + '% is ' + times + ' lots of ' + this.bench + '%. Find ' + this.bench + '%.</p>' +
+      '<div class="answer-line"><label for="pw-b">' + this.bench + '% =</label><div class="input-row">' +
+      '<input id="pw-b" type="text" inputmode="decimal" autocomplete="off"></div><span class="mark" id="mark-pw-b"></span></div>' +
+      '<p class="step-title">Step 2: Find 100%, the whole.</p>' +
+      '<div class="answer-line"><label for="pw-w">100% =</label><div class="input-row">' +
+      '<input id="pw-w" type="text" inputmode="decimal" autocomplete="off">' + (this.unit ? '<span class="affix">' + this.unit + '</span>' : '') +
+      '</div><span class="mark" id="mark-pw-w"></span></div>';
+    this.root = c;
+    this.inputs = c.querySelectorAll('input');
+  };
+
+  WholeQ.prototype.picture = function (withAnswer) {
+    var b = this.bench, p = this.pct;
+    return U.numberLine({
+      points: [
+        // Spaced out so labels never overlap (a double number line doesn't need to be to scale).
+        { p: 0, top: '0', bottom: '0%' },
+        { p: 0.22, top: withAnswer ? String(this.benchVal) : '', bottom: b + '%' },
+        { p: 0.58, top: String(this.part), bottom: p + '%' },
+        { p: 1, top: withAnswer ? String(this.whole) : '?', bottom: '100%' }
+      ],
+      label: 'Percent line: ' + p + '% is ' + this.part + '. The whole, 100%, is the question mark.',
+      caption: 'Top: the amount. Bottom: the percent.'
+    });
+  };
+
+  WholeQ.prototype.check = function () {
+    var read = U.readInputs(this.inputs, '6');
+    if (read.incomplete) return read;
+    var bv = read.values[0], w = read.values[1];
+    var bOk = U.same(bv, this.benchVal), wOk = U.same(w, this.whole);
+    U.markInput(this.inputs[0], bOk);
+    U.markInput(this.inputs[1], wOk);
+    var times = this.pct / this.bench;
+    if (bOk && wOk) {
+      return { ok: true, message: this.pct + '% = ' + this.part + ', so ' + this.bench + '% = ' + this.benchVal + ', so 100% = ' + this.whole + '.' };
+    }
+    var notes = [];
+    if (!bOk) {
+      if (U.near(bv, this.part * this.bench / 100, 0.01)) notes.push('Step 1: ' + this.part + ' is the part, not the whole, so don’t take ' + this.bench + '% of it. ' + this.pct + '% = ' + this.part + ', so divide by ' + times + '.');
+      else notes.push('Step 1: ' + this.pct + '% is ' + times + ' lots of ' + this.bench + '%, so divide ' + this.part + ' by ' + times + '.');
+    }
+    if (!wOk) {
+      if (U.near(w, this.part * this.pct / 100, 0.01)) notes.push('Step 2: you found ' + this.pct + '% of ' + this.part + '. But ' + this.part + ' is already ' + this.pct + '%. The whole is bigger.');
+      else if (bOk) notes.push('Step 2: 100% is ' + (100 / this.bench) + ' lots of ' + this.bench + '%.');
+      else notes.push('Step 2: once you have ' + this.bench + '%, multiply to get to 100%.');
+    }
+    return { ok: false, message: notes.join(' ') };
+  };
+
+  WholeQ.prototype.hint = function () {
+    return '<p>' + this.part + ' is the <strong>part</strong>: it is ' + this.pct + '%. Work back to a benchmark, then build up to 100%.</p>' +
+      '<p>' + this.pct + '% = ' + this.part + ' → ' + this.bench + '% = ' + this.part + ' ÷ ' + (this.pct / this.bench) + ' → 100% = that × ' + (100 / this.bench) + '.</p>' +
+      '<p class="small">Check the size: ' + this.pct + '% is less than 100%, so the whole is bigger than ' + this.part + '.</p>';
+  };
+
+  WholeQ.prototype.solution = function () {
+    var t = this.pct / this.bench, u = 100 / this.bench;
+    return '<ol><li>' + this.pct + '% = ' + this.part + '.</li>' +
+      '<li>' + this.bench + '%: ' + this.part + ' ÷ ' + t + ' = ' + this.benchVal + '.</li>' +
+      '<li>100%: ' + this.benchVal + ' × ' + u + ' = <strong>' + this.whole + (this.unit ? ' ' + this.unit : '') + '</strong>.</li>' +
+      '<li>Check: ' + this.pct + '% of ' + this.whole + ' = ' + this.part + ' ✓</li></ol>' + this.picture(true);
+  };
+
+  WholeQ.prototype.lock = function () { U.disableAll(this.root); };
 
   window.PercentBuilder = { makeQuestion: makeQuestion, QUESTIONS: QUESTIONS };
   U.runRound({ id: 'percent-builder', questions: QUESTIONS, makeQuestion: makeQuestion });

@@ -18,7 +18,7 @@
     { aUnit: 'g', aNoun: 'spinach', aMin: 60, aMax: 240, aStep: 20 },
     { aUnit: 'scoops', aNoun: 'ice', aMin: 2, aMax: 12, aStep: 1 }
   ];
-  var MONEY = { money: true, aUnit: 'dollars', aNoun: '', aMin: 350, aMax: 650, aStep: 5 };
+  var MONEY = { money: true, aUnit: 'dollars', aNoun: '', aMin: 350, aMax: 650, aStep: 25 };
 
   function pickA(ctx) {
     var steps = Math.floor((ctx.aMax - ctx.aMin) / ctx.aStep);
@@ -39,7 +39,7 @@
       } else if (kind === 'down') {
         b2 = U.randInt(2, 4); b1 = b2 * U.randInt(2, 4);
       } else {
-        b1 = U.randInt(2, 8); b2 = U.randInt(3, 20);
+        b1 = U.randInt(2, 8); b2 = U.randInt(3, 15);
         if (b2 === b1 || b2 % b1 === 0 || b1 % b2 === 0) continue; // not nice: use the value for 1
       }
       if (kind === 'money') {
@@ -48,6 +48,10 @@
       } else {
         a1 = pickA(ctx);
         if (!friendlyUnit(a1, b1)) continue;
+        // No-calculator friendly value for 1: whole, one decimal (0.4), or quarters (1.25, 0.75).
+        var u = Math.round(a1 * 100 / b1);
+        if (u % 10 !== 0 && u % 25 !== 0) continue;
+        if ((ctx.aUnit === 'mL' || ctx.aUnit === 'g') && u % 500 !== 0) continue; // 75 mL per smoothie, not 137.5
         if (kind !== 'up' && kind !== 'down' && a1 % b1 === 0 && Math.random() < 0.7) continue; // prefer decimals
       }
       if (a1 === b1) continue; // a value for 1 of exactly 1 is too easy
@@ -129,7 +133,7 @@
     html += '</div><span class="mark" id="mark-setup"></span>' +
       '<p class="step-title"><label for="mi-x">Step 2: Solve it.</label></p>' +
       '<div class="input-row"><span class="affix">x =</span>' + (this.money ? '<span class="affix">$</span>' : '') +
-      '<input id="mi-x" type="text" inputmode="decimal" autocomplete="off">' +
+      '<input id="mi-x"' + (this.money ? ' data-money' : '') + ' type="text" inputmode="decimal" autocomplete="off">' +
       '<span class="affix">' + (this.d.askB ? 'smoothies' : this.money ? '' : this.d.ctx.aUnit) + '</span></div>' +
       '<span class="mark" id="mark-mi-x"></span>';
     c.innerHTML = html;

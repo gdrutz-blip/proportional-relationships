@@ -14,7 +14,10 @@ Practice games for Grade 8 math (Ontario: B1.4, B2.1, B2.8), all set at Zuri's S
 | `recipe-mixer/` | Lesson 1 game: scale a recipe in a ratio table, or split a total in a ratio (bar model). |
 | `best-buy/` | Lesson 2 game: compare two price tags by unit price. |
 | `missing-ingredient/` | Lesson 3 game: pick the proportion with the same order on both sides, then solve it. |
-| `percent-builder/` | Lesson 4 game: build a percent from 50%, 25%, 10%, 5% and 1% tiles on a double number line. |
+| `percent-builder/` | Lesson 4 game: build a percent from 50%, 25%, 10%, 5% and 1% tiles on a double number line; last question finds the whole. |
+| `price-board/` | Lesson 5 game: new price with a multiplier, percent change (÷ ORIGINAL), the original before an increase, two changes in a row. |
+| `checkout/` | Lesson 6 game: a receipt that builds line by line: discount, HST (× 1.13), tip on the food before tax, rounding at the end. |
+| `truck-fund/` | Lesson 7 game: I = Prt, months to years, total vs interest, find the time or rate, and choose a plan to reach a goal. |
 | `assets/js/common.js` | Shared code: name list, answer checking, saved stars, and the round engine (hint after one wrong try, worked solution after two). |
 | `assets/js/<game>.js` | Each game's question generator, hint and worked solution. |
 | `assets/css/style.css` | All styles. |
@@ -36,3 +39,10 @@ python3 -m http.server 8000
 ```
 
 Then visit http://localhost:8000.
+
+## Matching the Unit 3 materials
+
+- Flavours and recipes are the unit's: Berry Blast 2:3, Mango Rush 4:6, Green Machine 3:5, Tropical Twist 3:2, Peach Fizz 5:2.
+- Numbers are kept friendly for no-calculator work, like the unit test.
+- The tip is a percent of the food price before tax, as in the Lesson 6 handout.
+- Money answers like 1.2 are accepted, with a reminder to write $1.20.
