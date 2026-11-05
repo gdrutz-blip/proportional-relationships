@@ -8,20 +8,24 @@
 (function () {
   'use strict';
   var U = window.U3;
-  var QUESTIONS = 6;
-  var TILES = [50, 25, 10, 5, 1];
+  var QUESTIONS = 7;
+  var TILES = [50, 25, 10, 5, 1, 0.5];
   var MAX_TILES = 12;
-  var RULE = { 50: '÷ 2', 25: '÷ 4', 10: '÷ 10', 5: 'half of 10%', 1: '÷ 100' };
+  var RULE = { 50: '÷ 2', 25: '÷ 4', 10: '÷ 10', 5: 'half of 10%', 1: '÷ 100', 0.5: 'half of 1%' };
+  /** CSS class for a tile: t50, t25, t10, t5, t1, t05 */
+  /** Mark the target on the number line only where its labels won't crowd 0% or 100%. */
+  function showTarget(pct) { return pct >= 15 && Math.abs(pct - 100) >= 12; }
+  function tcls(t) { return 't' + String(t).replace('.', ''); }
 
   var TARGETS = [
     [10, 20, 25, 30, 50, 75],          // Q1: one or two kinds of tile
     [15, 35, 40, 55, 60, 70],          // Q2
     [45, 65, 85, 95, 80],              // Q3: three kinds of tile
-    [2, 11, 12, 21, 26, 51, 52],       // Q4: needs 1%
+    [2, 11, 12, 21, 26, 51, 0.5, 1.5, 2.5, 7.5, 12.5], // Q4: needs 1% or 0.5% (test: 0.5% of 800)
     [110, 115, 120, 125, 150],         // Q5: more than 100%
-    [15, 35, 45, 65, 12, 21, 85]       // Q6: mixed
   ];
-  var COUNT_BASES = [20, 40, 60, 80, 120, 160, 200, 240, 300, 400, 500];
+  // Q6 asks "what percent?", Q7 finds the whole.
+  var COUNT_BASES = [20, 40, 60, 80, 120, 160, 200, 240, 300, 400, 500, 600, 800, 1000];
 
   var COUNT_CONTEXTS = [
     function (n, base, pct) { return 'On Saturday, the truck sold ' + base + ' smoothies. ' + pct + '% of them were Berry Blast. How many Berry Blasts did it sell?'; },
@@ -39,14 +43,17 @@
 
   function makeQuestion(index, nextName) {
     if (index === QUESTIONS - 1) return new WholeQ(nextName());
+    if (index === QUESTIONS - 2) return whatPercent(nextName());
     var pct = U.pick(TARGETS[Math.min(index, TARGETS.length - 1)]);
     var name = nextName();
-    var bases = COUNT_BASES.filter(function (b) { return (b * pct) % 100 === 0; });
+    var bases = COUNT_BASES.filter(function (b) { var v = b * pct / 100; return Math.abs(v - Math.round(v)) < 1e-9 && v >= 1; });
     var money = !bases.length || Math.random() < 0.25;
     var base, text;
     if (money) {
       base = U.pick([40, 60, 80, 120, 150, 200, 240, 360]);
-      text = U.pick(MONEY_CONTEXTS)(name, base, pct);
+      text = pct > 100 ?
+        'Last month the truck took in $' + base + '. This month it took in ' + pct + '% of that. How much did it take in this month?' :
+        U.pick(MONEY_CONTEXTS)(name, base, pct);
     } else {
       base = U.pick(bases);
       text = (pct > 100 ? GROWTH_CONTEXT : U.pick(COUNT_CONTEXTS))(name, base, pct);
@@ -83,7 +90,7 @@
       '<p class="step-title">Step 1: Build ' + d.pct + '% from tiles.</p>' +
       '<div class="tile-bank" role="group" aria-label="Percent tiles">';
     TILES.forEach(function (t) {
-      html += '<button type="button" class="pct-tile t' + t + '" data-t="' + t + '">' + t + '%</button>';
+      html += '<button type="button" class="pct-tile ' + tcls(t) + '" data-t="' + t + '">' + t + '%</button>';
     });
     html += '</div><div class="tile-tools">' +
       '<button type="button" class="btn small-btn" data-act="undo">Undo</button>' +
@@ -156,11 +163,11 @@
     var max = Math.max(100, d.pct, this.built());
     var segs = [], at = 0;
     this.build.forEach(function (t) {
-      segs.push({ from: at / max, to: (at + t) / max, text: t + '%', cls: 't' + t });
+      segs.push({ from: at / max, to: (at + t) / max, text: t + '%', cls: tcls(t) });
       at += t;
     });
     var pts = [{ p: 0, top: d.money ? '$0' : '0', bottom: '0%' }, { p: 100 / max, top: this.baseText(), bottom: '100%' }];
-    if (Math.abs(d.pct - 100) >= 12) {
+    if (showTarget(d.pct)) {
       pts.push({ p: d.pct / max, top: withAnswer ? this.fmt(this.value(d.pct)) : '?', bottom: d.pct + '%' });
     }
     return U.numberLine({
@@ -187,6 +194,7 @@
       if (ok) return;
       allOk = false;
       if (t === 5 && U.near(v, d.base / 5, 0.001)) notes.push('5% is half of 10%, not ÷ 5.');
+      else if (t === 0.5 && (U.near(v, d.base / 2, 0.001) || U.near(v, d.base / 5, 0.001) || U.near(v, d.base / 50, 0.001))) notes.push('0.5% is half of 1%. Find 1% first (÷ 100), then halve it.');
       else if (t === 25 && U.near(v, d.base / 25, 0.001)) notes.push('25% = ÷ 4, not ÷ 25.');
       else if (t === 1 && (U.near(v, d.base / 10, 0.001) || U.same(v, d.base))) notes.push('1% = ÷ 100.');
       else if (t === 50 && U.near(v, d.base / 50, 0.001)) notes.push('50% = ÷ 2, not ÷ 50.');
@@ -214,13 +222,13 @@
 
   Question.prototype.hint = function () {
     var self = this, d = this.d;
-    var rules = this.kinds().map(function (t) { return '<li>' + t + '% = ' + RULE[t] + (t === 5 ? ' (so find 10% first)' : '') + '</li>'; }).join('');
+    var rules = this.kinds().map(function (t) { return '<li>' + t + '% = ' + RULE[t] + (t === 5 ? ' (so find 10% first)' : t === 0.5 ? ' (so find 1% first)' : '') + '</li>'; }).join('');
     var repeats = this.kinds().filter(function (t) { return self.countOf(t) > 1; });
     return '<p>Use the benchmarks:</p><ul>' + rules + '</ul>' +
       '<p>Then add an amount for <strong>every</strong> tile.' +
       (repeats.length ? ' You used ' + repeats.map(function (t) { return t + '% ' + self.countOf(t) + ' times'; }).join(' and ') + ', so add that amount that many times.' : '') +
       '</p>' + this.picture(false) +
-      (Math.abs(d.pct - 100) >= 12 ? '<p class="small">The ? is ' + d.pct + '% of ' + this.baseText() + '.</p>' : '');
+      (showTarget(d.pct) ? '<p class="small">The ? is ' + d.pct + '% of ' + this.baseText() + '.</p>' : '');
   };
 
   Question.prototype.solution = function () {
@@ -229,6 +237,7 @@
     this.kinds().forEach(function (t) {
       var how;
       if (t === 5) how = 'half of 10% = half of ' + self.fmt(self.value(10));
+      else if (t === 0.5) how = 'half of 1% = half of ' + self.fmt(self.value(1));
       else how = b + ' ' + RULE[t];
       html += '<li>' + t + '% of ' + b + ' = ' + how + ' = <strong>' + self.fmt(self.value(t)) + '</strong></li>';
     });
@@ -336,6 +345,43 @@
   };
 
   WholeQ.prototype.lock = function () { U.disableAll(this.root); };
+
+  // =====================================================================
+  // What percent? (Lesson 4 handout: 17/20 = 85/100 = 85%)
+  // =====================================================================
+  function whatPercent(name) {
+    var den, part;
+    do {
+      den = U.pick([20, 25, 50, 200, 20, 25, 4, 5]);
+      part = U.randInt(1, den - 1);
+    } while (Math.abs(part * 100 / den - Math.round(part * 100 / den)) > 1e-9 || part * 2 === den);
+    var pct = part * 100 / den;
+    var k = 100 / den;                                  // × k (or ÷ 2 for 200)
+    var how = den === 200 ? '÷ 2' : '× ' + k;
+    var ctx = U.randInt(0, 2), prompt;
+    if (ctx === 0) prompt = 'Zuri asked ' + den + ' customers for their favourite flavour. ' + part + ' chose Peach Fizz. What percent is that?';
+    else if (ctx === 1) prompt = part + ' of the ' + den + ' smoothies ' + name + ' made on Friday were Green Machines. What percent were Green Machines?';
+    else prompt = 'What percent is ' + part + ' out of ' + den + '?';
+    var f = U.frac;
+    return new U.StepQuestion({
+      prompt: prompt,
+      before: '<p class="recipe-card"><span class="recipe-ratio">' + f(part, den) + ' <span class="eq-sign">=</span> ' + f('?', '100') + '</span></p>',
+      steps: [
+        { label: 'Make the bottom 100. What goes on top?', answer: pct,
+          mistakes: [{ value: part, msg: 'If the bottom changes from ' + den + ' to 100, the top has to change the same way: ' + how + '.' }],
+          wrong: 'The bottom goes ' + den + ' → 100, so do the same to the top.' },
+        { label: 'As a percent', pct: true, answer: pct, accept: [pct / 100],
+          mistakes: [{ value: 100 - pct, msg: 'That’s the percent who did NOT. The question asks about the ' + part + '.' },
+            { value: U.clean(den / part * 100), near: 0.01, msg: 'Keep the order: ' + part + ' out of ' + den + ' is ' + part + ' ÷ ' + den + ', not the other way.' }] }
+      ],
+      success: f(part, den) + ' = ' + f(U.num(pct), 100) + ' = ' + U.num(pct) + '%.',
+      hint: '<p>Percent means out of 100. Make the bottom 100: ' + den + ' ' + how + ' = 100.</p>' +
+        '<p>Do the same to the top: ' + part + ' ' + how + ' = ?. That number is the percent.</p>',
+      solution: '<ol><li>' + den + ' ' + how + ' = 100, so do the same to the top: ' + part + ' ' + how + ' = ' + U.num(pct) + '.</li>' +
+        '<li>' + f(part, den) + ' = ' + f(U.num(pct), 100) + ' = <strong>' + U.num(pct) + '%</strong></li>' +
+        '<li>Check it makes sense: ' + part + ' is ' + (pct > 50 ? 'more' : 'less') + ' than half of ' + den + ', and ' + U.num(pct) + '% is ' + (pct > 50 ? 'more' : 'less') + ' than 50% ✓</li></ol>'
+    });
+  }
 
   window.PercentBuilder = { makeQuestion: makeQuestion, QUESTIONS: QUESTIONS };
   U.runRound({ id: 'percent-builder', questions: QUESTIONS, makeQuestion: makeQuestion });

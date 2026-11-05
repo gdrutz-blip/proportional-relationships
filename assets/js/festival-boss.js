@@ -259,8 +259,8 @@
   var POOL = [festivalSales, blender, saleBag, gasTrip, market, splitSave, hotel, festivalFee, newBlender];
   var order = [];
 
-  function makeQuestion(index, nextName) {
-    if (index === 0 || !order.length) {
+  function makeQuestion(index, nextName, practice) {
+    if ((index === 0 && !practice) || !order.length) {
       // Always start with the test-style festival sales problem, then 4 others at random.
       order = [festivalSales].concat(U.shuffle(POOL.slice(1)).slice(0, QUESTIONS - 1));
     }

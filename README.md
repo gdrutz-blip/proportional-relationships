@@ -14,7 +14,7 @@ Practice games for Grade 8 math (Ontario: B1.4, B2.1, B2.8), all set at Zuri's S
 | `recipe-mixer/` | Lesson 1 game: scale a recipe in a ratio table, or split a total in a ratio (bar model). |
 | `best-buy/` | Lesson 2 game: compare two price tags by unit price. |
 | `missing-ingredient/` | Lesson 3 game: pick the proportion with the same order on both sides, then solve it. |
-| `percent-builder/` | Lesson 4 game: build a percent from 50%, 25%, 10%, 5% and 1% tiles on a double number line; last question finds the whole. |
+| `percent-builder/` | Lesson 4 game: build a percent from 50%, 25%, 10%, 5%, 1% and 0.5% tiles on a double number line, then “what percent?” and finding the whole. |
 | `price-board/` | Lesson 5 game: new price with a multiplier, percent change (÷ ORIGINAL), the original before an increase, two changes in a row. |
 | `checkout/` | Lesson 6 game: a receipt that builds line by line: discount, HST (× 1.13), tip on the food before tax, rounding at the end. |
 | `truck-fund/` | Lesson 7 game: I = Prt, months to years, total vs interest, find the time or rate, and choose a plan to reach a goal. |

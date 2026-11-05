@@ -365,7 +365,16 @@
       check: $('check'), next: $('next'),
       progress: $('progress'), progressLabel: $('progress-label'), score: $('score')
     };
-    var index, points, tries, q, finished, firstTry, nextName;
+    var index, points, tries, q, finished, firstTry, nextName, practice, sawSolution;
+
+    // "Try a similar one": after a worked solution, a fresh question of the same kind, for practice (no points).
+    var similar = document.createElement('button');
+    similar.type = 'button';
+    similar.className = 'btn';
+    similar.id = 'similar';
+    similar.textContent = 'Try a similar one';
+    similar.hidden = true;
+    els.next.parentNode.insertBefore(similar, els.next);
 
     function setFeedback(kind, html) {
       els.feedback.className = 'feedback ' + kind;
@@ -386,19 +395,22 @@
       showQuestion();
     }
 
-    function showQuestion() {
-      tries = 0; finished = false;
-      q = cfg.makeQuestion(index, nextName);
+    function showQuestion(isPractice) {
+      tries = 0; finished = false; sawSolution = false;
+      practice = !!isPractice;
+      q = cfg.makeQuestion(index, nextName, practice);
       U3.current = q; // lets automated tests read the question; the game does not use it
       els.question.innerHTML = '';
       q.render(els.question);
       setFeedback('', '');
       els.check.hidden = false;
       els.next.hidden = true;
+      similar.hidden = true;
       els.progress.value = index;
-      els.progressLabel.textContent = 'Question ' + (index + 1) + ' of ' + total;
-      var first = els.question.querySelector('input, button');
-      if (first && index > 0) first.focus({ preventScroll: true });
+      els.progressLabel.textContent = 'Question ' + (index + 1) + ' of ' + total + (practice ? ' · practice (no points)' : '');
+      if (practice) els.question.insertAdjacentHTML('afterbegin', '<p class="practice-tag">Practice: same kind of question, new numbers. It doesn’t change your points.</p>');
+      var first = els.question.querySelector('input, button, select');
+      if (first && (index > 0 || practice)) first.focus({ preventScroll: true });
     }
 
     function onCheck(evt) {
@@ -412,8 +424,10 @@
       tries++;
       var note = moneyNote(els.question);
       if (r.ok) {
-        points += tries === 1 ? 2 : 1;
-        if (tries === 1) firstTry++;
+        if (!practice) {
+          points += tries === 1 ? 2 : 1;
+          if (tries === 1) firstTry++;
+        }
         setFeedback('good', '<p><strong>' + pick(PRAISE) + '</strong> ' + (r.message || '') + '</p>' + note);
         endQuestion();
       } else if (tries === 1) {
@@ -424,7 +438,9 @@
       } else {
         setFeedback('show',
           '<p><strong>Let’s look at it together.</strong></p>' +
-          '<div class="solution"><h2>Worked solution</h2>' + q.solution() + '</div>');
+          '<div class="solution"><h2>Worked solution</h2>' + q.solution() + '</div>' +
+          '<p class="small">Want to try the method yourself? Press <strong>Try a similar one</strong> for new numbers, just for practice.</p>');
+        sawSolution = true;
         endQuestion();
       }
     }
@@ -436,6 +452,7 @@
       els.check.hidden = true;
       els.next.hidden = false;
       els.next.textContent = index + 1 >= total ? 'See my stars →' : 'Next →';
+      similar.hidden = !sawSolution;
       els.next.focus({ preventScroll: true });
     }
 
@@ -458,7 +475,7 @@
         '<p>You scored <strong>' + points + ' of ' + max + '</strong> points. ' +
         firstTry + ' of ' + total + ' right on the first try.</p>' +
         (record.best > stars ? '<p class="small">Your best is ' + record.best + ' stars.</p>' : '') +
-        '<p class="small">2 points for a first-try answer, 1 point for a second-try answer.</p>' +
+        '<p class="small">2 points for a first-try answer, 1 point for a second-try answer. Practice questions don’t change your points.</p>' +
         '<div class="actions">' +
         '<button type="button" class="btn primary" id="again">Play again</button>' +
         '<a class="btn" href="../">Back to the truck</a></div>';
@@ -469,6 +486,7 @@
 
     els.form.addEventListener('submit', onCheck);
     els.next.addEventListener('click', goNext);
+    similar.addEventListener('click', function () { showQuestion(true); });
     start();
   }
 

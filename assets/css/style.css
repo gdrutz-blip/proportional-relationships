@@ -265,6 +265,7 @@ a.tile .tile-status { color: var(--berry); }
 .feedback.try { background: var(--try-bg); border-color: var(--mango); }
 .feedback.show { background: var(--show-bg); border-color: var(--show-line); }
 .feedback p { margin: 0.3rem 0; }
+.practice-tag { margin: 0 0 0.6rem; padding: 0.4rem 0.8rem; background: #eef0ff; border-left: 5px solid var(--show-line); border-radius: 6px; font-weight: 700; }
 .feedback .warn { margin-top: 0.6rem; padding: 0.5rem 0.7rem; background: var(--try-bg); border-left: 5px solid var(--mango); border-radius: 6px; }
 .feedback h2 { font-size: 1rem; margin: 0.6rem 0 0.2rem; text-transform: uppercase; letter-spacing: 0.05em; }
 .feedback ol { margin: 0.3rem 0; padding-left: 1.4rem; }
@@ -302,6 +303,7 @@ a.tile .tile-status { color: var(--berry); }
 .dnl-seg.t10 { fill: var(--mint); stroke: var(--ink); }
 .dnl-seg.t5 { fill: #e3e7ff; stroke: var(--ink); }
 .dnl-seg.t1 { fill: #f1eef3; stroke: var(--ink); }
+.dnl-seg.t05 { fill: #fff; stroke: var(--ink); stroke-dasharray: 3 2; }
 .dnl-segtext { font: 700 13px system-ui, sans-serif; fill: var(--ink); }
 
 /* Recipe card and ratio tables (Recipe Mixer) */
@@ -374,6 +376,7 @@ a.tile .tile-status { color: var(--berry); }
 .pct-tile.t10 { background: var(--mint); }
 .pct-tile.t5 { background: #e3e7ff; }
 .pct-tile.t1 { background: #f1eef3; }
+.pct-tile.t05 { background: #fff; border-style: dashed; }
 .pct-tile:hover:not(:disabled) { border-color: var(--berry); }
 .pct-tile:disabled, .small-btn:disabled { cursor: default; opacity: 0.6; }
 .tile-tools { display: flex; gap: 0.6rem; margin-top: 0.6rem; }
