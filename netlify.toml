@@ -1,0 +1,19 @@
+# Static site: no build step. Netlify serves the repo folder as-is.
+[build]
+  publish = "."
+  command = ""
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Nothing on this site talks to a server: no data leaves the device.
+    Content-Security-Policy = "default-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'self'"
+    Referrer-Policy = "no-referrer"
+    X-Content-Type-Options = "nosniff"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    # Short cache so updates show up the next school day without a hard refresh.
+    Cache-Control = "public, max-age=3600"

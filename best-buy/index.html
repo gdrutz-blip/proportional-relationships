@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'self'">
+  <title>Best Buy · Zuri's Smoothie Truck</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body class="game-page">
+  <header class="topbar">
+    <a class="back" href="../">← Truck</a>
+    <h1>🏷️ Best Buy</h1>
+    <span class="score" id="score" aria-live="polite"></span>
+  </header>
+
+  <main class="game">
+    <p class="key-move"><strong>Key move:</strong> Divide by the thing you want “per.”</p>
+
+    <section id="play">
+      <div class="progress-row">
+        <span id="progress-label"></span>
+        <progress id="progress" max="6" value="0"></progress>
+      </div>
+
+      <form id="qform" novalidate>
+        <div id="question"></div>
+        <div id="feedback" class="feedback" aria-live="polite"></div>
+        <div class="actions">
+          <button type="submit" class="btn primary" id="check">Check</button>
+          <button type="button" class="btn primary" id="next" hidden>Next →</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="summary" class="summary" hidden></section>
+
+    <noscript><p class="feedback show">This game needs JavaScript turned on.</p></noscript>
+  </main>
+
+  <script src="../assets/js/common.js"></script>
+  <script src="../assets/js/best-buy.js"></script>
+</body>
+</html>
