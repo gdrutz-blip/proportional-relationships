@@ -150,8 +150,13 @@
     mark.textContent = setupOk ? '✓ Same order on both sides' : '✗ Check the order';
     mark.className = 'mark ' + (setupOk ? 'right' : 'wrong');
     U.markInput(this.input, ansOk);
-    if (setupOk && ansOk) {
-      return { ok: true, message: 'x = ' + (d.askB ? this.b(d.b2) : this.a(this.A2)) + '.' };
+    var xText = 'x = ' + (d.askB ? this.b(d.b2) : this.a(this.A2)) + '.';
+    if (setupOk && ansOk) return { ok: true, message: xText };
+    if (ansOk) {
+      // The answer counts, but the setup gets a clear warning: a mixed-up order gives wrong answers on other problems.
+      return { ok: true, message: xText + '</p><p class="warn"><strong>⚠ But check Step 1.</strong> The proportion you picked mixes up the order. ' +
+        'It worked out this time, but on other problems it will give the wrong answer. Keep the same order on both sides: ' +
+        this.aShort() + '/smoothies = ' + this.aShort() + '/smoothies. The right one is now in green.' };
     }
     var notes = [];
     if (!setupOk) notes.push('Step 1: keep the same order on both sides, like ' + this.aShort() + '/smoothies = ' + this.aShort() + '/smoothies.');
