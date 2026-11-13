@@ -458,6 +458,56 @@ a.tile .tile-status { color: var(--berry); }
   background: var(--mango-light); border: 1px solid #b8741a;
 }
 
+/* Calculator (optional, closed by default) */
+.calc-toggle {
+  min-height: 48px; padding: 0 0.9rem; margin-left: auto;
+  font: inherit; font-weight: 700; color: #fff; cursor: pointer;
+  background: transparent; border: 2px solid rgba(255, 255, 255, 0.6); border-radius: 999px;
+}
+.calc-toggle:hover, .calc-toggle.on { background: rgba(255, 255, 255, 0.18); }
+.topbar .calc-toggle + .score { margin-left: 0; }
+.calc-panel {
+  position: fixed; right: 16px; bottom: 16px; z-index: 20;
+  width: 300px; max-width: calc(100vw - 32px);
+  padding: 0.8rem; background: #fff;
+  border: 3px solid var(--berry); border-radius: var(--radius);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+}
+.calc-panel[hidden] { display: none; }
+.calc-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.3rem; }
+.calc-title { font-weight: 800; color: var(--berry); }
+.calc-close { min-width: 44px; min-height: 44px; font: inherit; font-size: 1.1rem; background: none; border: none; cursor: pointer; color: var(--muted); }
+.calc-last { margin: 0; min-height: 1.4em; font-size: 0.9rem; color: var(--muted); text-align: right; overflow-wrap: anywhere; }
+.calc-input {
+  width: 100%; min-height: 52px; padding: 0.4rem 0.6rem;
+  font: inherit; font-size: 1.4rem; text-align: right; font-variant-numeric: tabular-nums;
+  border: 2px solid #8f8597; border-radius: 10px; background: var(--cream);
+}
+.calc-msg { margin: 0.2rem 0; min-height: 1.2em; font-size: 0.85rem; font-weight: 700; color: var(--bad); }
+.calc-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.calc-key {
+  min-height: 48px; font: inherit; font-size: 1.2rem; font-weight: 700; cursor: pointer;
+  color: var(--ink); background: #f4f1f6; border: 2px solid var(--line); border-radius: 10px;
+}
+.calc-key:hover { border-color: var(--berry); }
+.calc-key.op { background: var(--mango-light); }
+.calc-key.fn { background: #fff; font-size: 1rem; }
+.calc-key.calc-eq { background: var(--berry); color: #fff; border-color: var(--berry); }
+.calc-note { margin: 0.5rem 0 0; font-size: 0.8rem; color: var(--muted); text-align: center; }
+@media (max-width: 600px) {
+  .topbar { gap: 0.4rem 0.5rem; flex-wrap: wrap; }
+  .topbar h1 { order: 5; flex-basis: 100%; font-size: 1.15rem; }
+  .topbar .back { padding: 0 0.6rem; }
+  .score { font-size: 0.95rem; }
+  .calc-toggle { padding: 0 0.7rem; }
+  .calc-toggle-text { display: none; }
+  .calc-panel { left: 0; right: 0; bottom: 0; width: auto; max-width: none; border-radius: var(--radius) var(--radius) 0 0; border-bottom: none; }
+  .calc-key { min-height: 46px; }
+  .calc-note { display: none; }
+  .calc-last { min-height: 1.1em; }
+}
+@media print { .calc-toggle, .calc-panel { display: none !important; } }
+
 /* Teacher page */
 .teacher section { margin-bottom: 1.6rem; }
 .teacher h2 { color: var(--berry); margin: 0 0 0.5rem; font-size: 1.3rem; }

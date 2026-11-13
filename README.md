@@ -23,6 +23,7 @@ Practice games for Grade 8 math (Ontario: B1.4, B2.1, B2.8), all set at Zuri's S
 | `assets/img/site-qr.svg`, `site-qr.png` | QR code for the site (made offline, no QR service). |
 | `assets/js/common.js` | Shared code: name list, answer checking, saved stars, and the round engine (hint after one wrong try, worked solution after two). |
 | `assets/js/<game>.js` | Each game's question generator, hint and worked solution. |
+| `assets/js/calculator.js` | Optional calculator on every game page (closed by default). Set `ENABLED = false` at the top to turn it off for the whole site. |
 | `assets/css/style.css` | All styles. |
 | `netlify.toml` | Netlify settings: no build, publish the repo root, privacy headers. |
 
